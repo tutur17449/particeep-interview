@@ -36,13 +36,14 @@ export default function Pagination({
         onChange={handleChange}
       />
       <FormControl>
-        <InputLabel id="select-items">Items</InputLabel>
+        <InputLabel id="select-items-label">Items</InputLabel>
         <Select
+          labelId="select-items-label"
           id="select-items"
           value={itemsPerPage}
-          defaultValue={itemsPerPage}
           onChange={event => updateItemsPerPage(event.target.value as number)}
           variant="outlined"
+          label="Items"
           size="small"
         >
           {[4, 6, 12].map(value => (

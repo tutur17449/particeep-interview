@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Movie as TMovie, getMovies } from '../api/movies'
+import { Interaction, Movie as TMovie, getMovies } from '../api/movies'
 import { Movie, Filters, Pagination } from '../components'
-import { CircularProgress, Grid, Stack, Typography } from '@mui/material'
+import {
+  CircularProgress,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from '@mui/material'
 import { usePagination } from '../hooks/usePagination'
 import { motion } from 'framer-motion'
 import { containerVariant } from '../utils/framer'
@@ -20,6 +26,8 @@ export default function Home() {
     resetPage,
   } = usePagination()
 
+  const matches = useMediaQuery('(max-width:750px)')
+
   useEffect(() => {
     getMovies()
       .then(setMovies)
@@ -34,6 +42,37 @@ export default function Home() {
     const newMovies = movies.filter(movie => movie.id !== id)
     if (newMovies.length % itemsPerPage === 0) previousPage()
     setMovies(prevState => prevState.filter(movie => movie.id !== id))
+  }
+
+  const toggleLikeDislike = (id: string, action: Interaction) => {
+    setMovies(prevState =>
+      prevState.map(movie => {
+        if (movie.id !== id) return movie
+
+        const { lastInteraction, likes, dislikes } = movie
+
+        let newLikes = likes
+        let newDislikes = dislikes
+
+        if (!lastInteraction) {
+          newLikes = action === 'like' ? likes + 1 : likes
+          newDislikes = action === 'dislike' ? dislikes + 1 : dislikes
+        } else if (lastInteraction === action) {
+          newLikes = action === 'like' ? likes - 1 : likes
+          newDislikes = action === 'dislike' ? dislikes - 1 : dislikes
+        } else {
+          newLikes = action === 'like' ? likes + 1 : likes - 1
+          newDislikes = action === 'dislike' ? dislikes + 1 : dislikes - 1
+        }
+
+        return {
+          ...movie,
+          lastInteraction: lastInteraction === action ? undefined : action,
+          likes: newLikes,
+          dislikes: newDislikes,
+        }
+      }),
+    )
   }
 
   const filteredMovies = useMemo(
@@ -52,20 +91,18 @@ export default function Home() {
 
   return (
     <motion.div initial="hidden" animate="show" variants={containerVariant}>
-      <Stack
-        alignItems="center"
-        gap="1rem"
-        width="90%"
-        m="auto"
-        sx={{ height: '100%', overflow: 'hidden' }}
-      >
+      <Stack alignItems="center" gap="1rem" width="90%" m="auto">
         <Typography component="h1" variant="h3">
           Particeep interview
         </Typography>
         {isLoading && <CircularProgress />}
         {!isLoading && (
-          <Stack gap="1rem" width="100%" overflow="hidden" flex={1}>
-            <Stack direction="row" justifyContent="space-between">
+          <Stack gap="1rem" width="100%">
+            <Stack
+              direction={matches ? 'column' : 'row'}
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Filters
                 {...{
                   categories,
@@ -86,14 +123,13 @@ export default function Home() {
               />
             </Stack>
             {currentMovies.length ? (
-              <Grid container spacing={2} overflow="scroll">
+              <Grid container spacing={2}>
                 {currentMovies.map(movie => (
                   <Movie
                     key={movie.id}
                     movie={movie}
                     onRemove={handleRemoveMovie}
-                    // !TODO: to implement
-                    toggleLikeDislike={() => void 0}
+                    toggleLikeDislike={toggleLikeDislike}
                   />
                 ))}
               </Grid>

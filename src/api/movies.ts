@@ -1,4 +1,5 @@
 type Category = 'Comedy' | 'Thriller' | 'Drame' | 'Animation'
+export type Interaction = 'like' | 'dislike'
 
 export type Movie = {
   id: string
@@ -6,6 +7,7 @@ export type Movie = {
   category: Category
   likes: number
   dislikes: number
+  lastInteraction?: Interaction
 }
 
 const movies: Movie[] = [
