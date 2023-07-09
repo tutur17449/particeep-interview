@@ -81,6 +81,5 @@ const movies: Movie[] = [
   },
 ]
 
-export const getMovies = new Promise<Movie[]>(resolve =>
-  setTimeout(resolve, 100, movies),
-)
+export const getMovies = () =>
+  new Promise<Movie[]>(resolve => setTimeout(resolve, 100, movies))
